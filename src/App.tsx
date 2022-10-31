@@ -4,7 +4,7 @@ import NewBook from './components/NewBook';
 import { Book } from './types';
 
 
-const myBooks: Book[] = [
+const INIT_BOOK_LIST: Book[] = [
   {
     title: "le petit prince",
     author: "Antoine de saint-exupéry",
@@ -124,15 +124,13 @@ const myBooks: Book[] = [
 
 function App() {
   const appStyle = { display: 'flex', flexFlow: 'row wrap' };
-  const [books, setBooks] = useState(myBooks);
+  const [books, setBooks] = useState(INIT_BOOK_LIST);
 
-  const addBookHandler = (book: Book) => {
-    console.log(book)
-    setBooks(prevBooks => [book, ...prevBooks]);
+  const addBookHandler =  (book: Book) => {
+    setBooks(prevBookList => [book, ...prevBookList])
   }
 
   return (
-
     <div style={appStyle}>
       <NewBook onAddBook={addBookHandler} />
       {books.map(book => <BookCard {...book} />)}

@@ -1,114 +1,81 @@
-import { Card, CardMedia, CardContent, Typography, CardActions, Rating, Chip, Slider, TextField, TextareaAutosize } from '@mui/material';
-import React, { ChangeEvent, useState } from 'react'
-import { Book } from '../types';
-import dayjs, { Dayjs } from 'dayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { Card, CardMedia, CardContent, CardActions, Rating, Slider, TextField, TextareaAutosize, Button } from '@mui/material'
+import { LocalizationProvider, DesktopDatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import dayjs from 'dayjs';
+import React, { useState } from 'react'
+import { Book } from '../types'
 
-
-
-
-type newBookProps = {
-    onAddBook: (book: Book) => void;
+type NewBookProps = {
+    onAddBook: (book: Book) => void
 }
 const myCardStyle = { backgroundColor: '#f5f6f7' }
-const myCardSx = { m: 2, p: 2, maxWidth: 300 }
+const myCardSx = { m: 2, p: 2, mr: 20, ml: 5, maxWidth: 300 }
+
 const BOOK_TO_INITIALIZE: Book = {
     title: '',
     author: '',
     summary: '',
+    rating: 0,
     startDate: dayjs().toDate(),
     progress: 0,
-    rating: 0
-} as Book;
+    img: ''
+}
 
 
+const NewBook = ({onAddBook}: NewBookProps) => {
 
-
-const NewBook = ({ onAddBook }: newBookProps) => {
-
-    const [book, setBook] = useState<Book>(BOOK_TO_INITIALIZE as Book);
-
-    const startedDateChangeHandler = (newValue: any) => {
-        setBook((prevBook: Book) => ({ ...prevBook, startDate: newValue.toDate() }));
-    };
-
-    const submitForm = (event: React.SyntheticEvent) => {
-        event.preventDefault();
-        onAddBook(book);
-        setBook(BOOK_TO_INITIALIZE as Book); // clearing the form after its submission
-    }
+    const [book, setBook] = useState<Book>(BOOK_TO_INITIALIZE as Book)
 
     const titleChangeHandler = (event: any) => {
-        setBook((prevBook: Book) => ({ ...prevBook, title: event.target.value }));
+        setBook(prevBook => ({ ...prevBook, title: event.target.value }))
     }
 
     const authorChangeHandler = (event: any) => {
-        setBook((prevAuthor: Book) => ({ ...prevAuthor, author: event.target.value }));
+        setBook(prevBook => ({ ...prevBook, author: event.target.value }))
     }
 
     const summaryChangeHandler = (event: any) => {
-        setBook((prevBook: Book) => ({ ...prevBook, summary: event.target.value }));
+        setBook(prevBook => ({ ...prevBook, summary: event.target.value }))
     }
 
     const ratingChangeHandler = (event: any, newValue: any) => {
-        setBook((prevBook: Book) => ({ ...prevBook, rating: newValue }));
+        setBook(prevBook => ({ ...prevBook, rating: newValue }))
     }
 
-    const progressChangeHandler = (event: Event, newValue: any) => {
-        setBook((prevBook: Book) => ({ ...prevBook, progress: newValue }));
-    };
-
-
-
-    // 
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const getBase64 = (file: any) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-            reader.readAsDataURL(file);
-        });
+    const progressChangeHandler = (event: any, newValue: any) => {
+        setBook(prevBook => ({ ...prevBook, progress: newValue }))
     }
 
-    const fileUploadHandler = (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files)
-            return;
+    const startedDateChangeHandler = (newValue: any) => {
+        setBook(prevBook => ({ ...prevBook, startDate: newValue.toDate() }))
+    }
 
-        const file = event.target.files[0];
+    const imgChangeHandler = (event: any) => {
+        setBook(prevBook => ({ ...prevBook, img: event.target.value }))
+    }
 
-        setSelectedFile(file)
-        getBase64(file).then(base64 => {
-            localStorage["fileBase64"] = base64;
-            console.debug("file stored", base64);
-        });
 
-        console.log(URL.createObjectURL(event.target.files[0]))
-    };
-    // 
+    const submitForm = (event: React.SyntheticEvent) => {
+        event.preventDefault()
+        onAddBook(book)
+        setBook(BOOK_TO_INITIALIZE); // clearing the form
+    }
 
     return (
         <>
             <form onSubmit={submitForm}>
                 <Card style={myCardStyle} sx={myCardSx}>
-                    <CardMedia component="img" height="450px" image={selectedFile === null ? '' : URL.createObjectURL(selectedFile)} />
-
-                    <input type="file" name="file"
-                        onChange={fileUploadHandler}
-                    />
-                    {/* <img src={selectedFile === null ? '' : URL.createObjectURL(selectedFile)} alt="preview" /> */}
+                    <CardMedia component="img" height="450px" image={book.img} />
+                    <TextField onChange={imgChangeHandler} value={book.img} label="image url" variant="standard" />
 
                     <CardContent>
-                        <TextField variant="standard" label='title' value={book.title} onChange={titleChangeHandler} margin="normal" />
-                        <TextField variant="standard" label='author' value={book.author} onChange={authorChangeHandler} margin="normal" />
-                        <TextareaAutosize aria-label="minimum height" minRows={3} placeholder="Summary..." value={book.summary} onChange={summaryChangeHandler} style={{ width: 250, marginTop: 20 }} />
+                        <TextField onChange={titleChangeHandler} value={book.title} label="Title" variant="standard" margin='normal' />
+                        <TextField onChange={authorChangeHandler} value={book.author} label="Author" variant="standard" margin='normal' />
+                        <TextareaAutosize onChange={summaryChangeHandler} aria-label="minimum height" minRows={3} value={book.summary} placeholder="Book summary" style={{ width: 200 }} />
                     </CardContent>
+                    <CardActions> <Rating onChange={ratingChangeHandler} value={book.rating} /></CardActions>
 
-                    <CardActions> <Rating value={book.rating} onChange={ratingChangeHandler} sx={{ mb: 2 }} /></CardActions>
-
-                    <LocalizationProvider dateAdapter={AdapterDayjs} >
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
                             label="Started at"
                             inputFormat="DD/MM/YYYY"
@@ -117,11 +84,15 @@ const NewBook = ({ onAddBook }: newBookProps) => {
                             renderInput={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
-                    <CardActions> Progress <Slider sx={{ ml: 2 }} onChange={progressChangeHandler} valueLabelDisplay="auto" value={book.progress} />%</CardActions>
+
+
+                    <CardActions> Progress <Slider onChange={progressChangeHandler} sx={{ ml: 2 }} aria-label="Volume" valueLabelDisplay='auto' value={book.progress} />%</CardActions>
+                    <Button variant="contained" color="success" type='submit'>
+                        Add Book
+                    </Button>
                 </Card>
 
 
-                <input type="submit" value="Submit" />
             </form>
         </>
     )
