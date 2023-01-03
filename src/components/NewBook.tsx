@@ -2,7 +2,7 @@ import { Card, CardMedia, CardContent, CardActions, Rating, Slider, TextField, T
 import { LocalizationProvider, DesktopDatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Book } from '../types'
 
 type NewBookProps = {
@@ -22,9 +22,30 @@ const BOOK_TO_INITIALIZE: Book = {
 }
 
 
-const NewBook = ({onAddBook}: NewBookProps) => {
+const NewBook = ({ onAddBook }: NewBookProps) => {
+    const validateForm = (): boolean => {
+        return book.author.length > 5 &&
+            book.title.length > 5 &&
+            book.img.length > 5 &&
+            book.summary.length > 10
+    }
+
+
+
+    const [formIsValid, setFormIsValid] = useState(false)
 
     const [book, setBook] = useState<Book>(BOOK_TO_INITIALIZE as Book)
+
+    useEffect(() => {
+
+        let timer = setTimeout(() => {
+            setFormIsValid(validateForm())
+            console.log(`the form validation result is ${formIsValid}`)
+        }, 250)
+        return () => clearTimeout(timer)
+    }, [book])
+
+
 
     const titleChangeHandler = (event: any) => {
         setBook(prevBook => ({ ...prevBook, title: event.target.value }))
@@ -43,7 +64,9 @@ const NewBook = ({onAddBook}: NewBookProps) => {
     }
 
     const progressChangeHandler = (event: any, newValue: any) => {
+
         setBook(prevBook => ({ ...prevBook, progress: newValue }))
+        console.log()
     }
 
     const startedDateChangeHandler = (newValue: any) => {
@@ -87,7 +110,8 @@ const NewBook = ({onAddBook}: NewBookProps) => {
 
 
                     <CardActions> Progress <Slider onChange={progressChangeHandler} sx={{ ml: 2 }} aria-label="Volume" valueLabelDisplay='auto' value={book.progress} />%</CardActions>
-                    <Button variant="contained" color="success" type='submit'>
+
+                    <Button disabled={!formIsValid} variant="contained" color="success" type='submit'>
                         Add Book
                     </Button>
                 </Card>
